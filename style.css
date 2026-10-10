@@ -1,0 +1,84 @@
+/* マイ・おしごと島 - 見た目の設定は主にこのファイルで変更します */
+:root {
+  --bg: #f5f7e9;
+  --paper: #fffef8;
+  --ink: #33443a;
+  --muted: #718074;
+  --green: #568568;
+  --green2: #dcebd7;
+  --gold: #f2c95d;
+  --line: #e4e9d9;
+  --shadow: 0 8px 24px #344b3510;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: system-ui, -apple-system, "Noto Sans JP", sans-serif;
+}
+button { font: inherit; cursor: pointer; border: 0; border-radius: 14px; padding: 12px 15px; font-weight: 700; transition: transform .12s, filter .12s; }
+button:active { transform: scale(.98); }
+.app { max-width: 760px; margin: auto; padding: 18px 15px 38px; }
+.top { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:15px; }
+.brand { display:flex; align-items:center; gap:10px; min-width:0; }
+.logo { width:76px; height:68px; flex-shrink:0; object-fit:cover; object-position:center 45%; border-radius:18px; box-shadow:0 4px 12px #344b3512; }
+.brand h1 { font-size:clamp(17px, 3.8vw, 22px); line-height:1.18; margin:0; color:#4f7357; }
+.title-break { display:none; }
+.brand p { margin:5px 0 0; color:var(--muted); font-size:12px; }
+.sync { font-size:11px; background:#fff; border:1px solid var(--line); border-radius:99px; padding:7px 10px; color:var(--muted); white-space:nowrap; }
+.hero { position:relative; overflow:hidden; border-radius:25px; padding:23px; background:linear-gradient(125deg,#dcebd7,#f4edc9); box-shadow:var(--shadow); margin-bottom:15px; }
+.hero:after { content:"🌳"; position:absolute; font-size:90px; right:8px; bottom:-13px; opacity:.78; }
+.eyebrow { font-size:12px; font-weight:800; color:#54735a; letter-spacing:.05em; }
+.balance { font-size:34px; font-weight:900; letter-spacing:-.03em; margin:7px 0 3px; }
+.balance small { font-size:14px; letter-spacing:0; }
+.sub { font-size:12px; color:#607363; }
+.stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:22px; }
+.stat { background:var(--paper); padding:14px; border:1px solid var(--line); border-radius:18px; }
+.stat span { font-size:12px; color:var(--muted); }
+.stat strong { display:block; font-size:22px; margin-top:5px; }
+.section-head { display:flex; justify-content:space-between; align-items:center; margin:22px 2px 11px; }
+.section-head h2 { font-size:17px; margin:0; }
+.section-head span { font-size:12px; color:var(--muted); }
+.progress { height:7px; border-radius:99px; background:#e8ecdf; overflow:hidden; margin:0 2px 14px; }
+.progress div { height:100%; width:0; background:var(--green); transition:width .3s; }
+.tasks { display:grid; gap:10px; }
+.task { display:flex; align-items:center; gap:12px; padding:14px; background:var(--paper); border:1px solid var(--line); border-radius:18px; box-shadow:0 3px 10px #344b3505; }
+.task.done { opacity:.65; }
+.task-icon { width:43px; height:43px; flex-shrink:0; display:grid; place-items:center; background:#f0f3e8; border-radius:14px; font-size:21px; }
+.task-copy { flex:1; min-width:0; }
+.task-copy strong { display:block; font-size:14px; line-height:1.4; }
+.task-copy small { display:block; color:var(--muted); font-size:11px; margin-top:4px; }
+.reward { font-size:13px; font-weight:900; color:#a77916; white-space:nowrap; }
+.claim { background:var(--green); color:white; padding:10px 12px; font-size:12px; white-space:nowrap; }
+.claimed { background:#e8eee4; color:#6b806e; padding:10px 12px; font-size:12px; }
+.shop { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.item { background:var(--paper); border:1px solid var(--line); border-radius:17px; padding:14px 9px; text-align:center; }
+.item .emoji { font-size:29px; }
+.item strong { display:block; font-size:12px; margin:6px 0; }
+.item small { color:var(--muted); font-size:11px; }
+.item button { margin-top:9px; width:100%; padding:9px 5px; background:#e2eddb; color:#45684d; font-size:11px; }
+.item button:disabled { background:#eee; color:#aaa; cursor:default; }
+.bottomnote { font-size:11px; line-height:1.7; color:var(--muted); margin:20px 3px 0; }
+.toast { position:fixed; left:50%; bottom:25px; transform:translate(-50%,20px); opacity:0; pointer-events:none; background:#33443a; color:white; border-radius:18px; padding:14px 20px; box-shadow:var(--shadow); font-weight:800; z-index:5; transition:.25s; text-align:center; max-width:90vw; }
+.toast.show { opacity:1; transform:translate(-50%,0); }
+.modal-bg { position:fixed; inset:0; background:#1c2c2180; display:none; align-items:center; justify-content:center; padding:20px; z-index:10; }
+.modal-bg.open { display:flex; }
+.modal { width:min(420px,100%); background:var(--paper); border-radius:22px; padding:22px; }
+.modal h2 { margin:0 0 8px; }
+.modal p { color:var(--muted); font-size:13px; line-height:1.6; }
+.modal .primary { background:var(--green); color:white; width:100%; }
+.modal .close { float:right; background:transparent; padding:0 5px; font-size:22px; }
+@media (max-width:420px) {
+  .app { padding:13px 12px 30px; }
+  .top { align-items:flex-start; }
+  .brand { gap:8px; }
+  .logo { width:62px; height:62px; }
+  .brand h1 { font-size:17px; }
+  .brand p { font-size:11px; }
+  .sync { padding:7px 8px; font-size:10px; }
+  .hero { padding:20px; }
+  .balance { font-size:30px; }
+  .task { gap:9px; padding:11px; }
+  .task-icon { width:37px; height:37px; }
+  .claim, .claimed { padding:9px 8px; }
+  .shop { gap:7px; }
+}
