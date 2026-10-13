@@ -48,12 +48,14 @@
     <div class="modal">
       <button id="closeModal" class="close" type="button" aria-label="閉じる">×</button>
       <h2 id="modalTitle">☁ 端末間の同期</h2>
-      <p>この試作品は今は端末内保存です。スマホとPCで同じデータを使うには、Firebaseなどのクラウドサービスとログイン機能の設定が必要です。</p>
-      <p><strong>次の実装ステップ</strong><br>1. Firebaseプロジェクト作成<br>2. ログイン機能を有効化<br>3. クラウドデータベースと安全ルールを設定<br>4. この画面を同期機能につなぐ</p>
-      <button id="understood" class="primary" type="button">わかった</button>
+      <p id="authStatus" role="status" aria-live="polite">ログイン状態を確認中…</p>
+      <p>同じGoogleアカウントでログインすると、PCやスマホで同じセーブデータを使えるようになります。</p>
+      <button id="signInBtn" class="primary" type="button">Googleでログインして同期</button>
+      <button id="signOutBtn" class="secondary" type="button" hidden>ログアウト</button>
+      <p id="syncNote">ログインすると、クラウドに保存されたデータを読み込みます。</p>
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>

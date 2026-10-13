@@ -1,9 +1,27 @@
-// マイ・おしごと島 - ゲームのルールやデータは主にこのファイルで変更します.
-//
-// カスタマイズ例:
-// ・ミッション名/報酬を変える → initialTasks の中身を編集
-// ・商品/価格を変える → shopItems の中身を編集
-// ・新しい機能を追加する → 下のイベント処理などを編集
+// マイ・おしごと島：Firebase同期対応版
+// Googleログイン中はセーブデータをFirestoreにも保存します。
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {
+  getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc, setDoc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBAFd8aJK99LLdV9cxG_FaUr7S_uJxg2j4",
+  authDomain: "piyopiyo-oshigoto-island.firebaseapp.com",
+  projectId: "piyopiyo-oshigoto-island",
+  storageBucket: "piyopiyo-oshigoto-island.firebasestorage.app",
+  messagingSenderId: "891671653767",
+  appId: "1:891671653767:web:9944ebbcdd84e653b3b722"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const googleProvider = new GoogleAuthProvider();
 
 const initialTasks = [
   { id: "task-paperwork", icon: "🗂️", title: "無意味な事務処理を片付けた", category: "おかたづけミッション", reward: 100 },
@@ -23,20 +41,66 @@ const today = new Date();
 const dayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 document.getElementById("dateLabel").textContent = `${today.getMonth() + 1}/${today.getDate()}`;
 
-let state;
-try {
-  state = JSON.parse(localStorage.getItem("oshigoto-island-v1") || "null");
-} catch (error) {
-  state = null;
+const STORAGE_KEY = "oshigoto-island-v1";
+let currentUser = null;
+let authReady = false;
+let cloudReady = false;
+let cloudWriteQueue = Promise.resolve();
+
+function normalizeState(data) {
+  const result = data && typeof data === "object"
+    ? JSON.parse(JSON.stringify(data))
+    : { balance: 0, claimed: {}, purchases: [], daily: {} };
+
+  if (typeof result.balance !== "number" || !Number.isFinite(result.balance)) result.balance = 0;
+  if (!result.claimed || typeof result.claimed !== "object") result.claimed = {};
+  if (!Array.isArray(result.purchases)) result.purchases = [];
+  if (!result.daily || typeof result.daily !== "object") result.daily = {};
+  if (!result.daily[dayKey] || typeof result.daily[dayKey] !== "object") result.daily[dayKey] = {};
+  return result;
 }
-if (!state) state = { balance: 0, claimed: {}, purchases: [] };
-if (!state.claimed) state.claimed = {};
-if (!state.purchases) state.purchases = [];
-if (!state.daily) state.daily = {};
-if (!state.daily[dayKey]) state.daily[dayKey] = {};
+
+function readLocalState() {
+  try {
+    return normalizeState(JSON.parse(localStorage.getItem(STORAGE_KEY) || "null"));
+  } catch (error) {
+    return normalizeState(null);
+  }
+}
+
+let state = readLocalState();
+
+function updateAuthUI(status, note = "") {
+  const statusEl = document.getElementById("authStatus");
+  const noteEl = document.getElementById("syncNote");
+  const signInBtn = document.getElementById("signInBtn");
+  const signOutBtn = document.getElementById("signOutBtn");
+
+  statusEl.textContent = status;
+  noteEl.textContent = note;
+  signInBtn.hidden = Boolean(currentUser);
+  signOutBtn.hidden = !currentUser;
+  signInBtn.disabled = !authReady;
+  signOutBtn.disabled = !authReady;
+}
 
 function saveState() {
-  localStorage.setItem("oshigoto-island-v1", JSON.stringify(state));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+  if (!currentUser || !cloudReady) return;
+  const uid = currentUser.uid;
+  const snapshot = JSON.parse(JSON.stringify(state));
+  cloudWriteQueue = cloudWriteQueue
+    .catch(() => {})
+    .then(() => setDoc(doc(db, "users", uid), {
+      state: snapshot,
+      updatedAt: serverTimestamp()
+    }, { merge: true }))
+    .catch(error => {
+      console.error("クラウド保存エラー:", error);
+      updateAuthUI(`ログイン中：${currentUser?.email || "Googleアカウント"}`,
+        "クラウド保存に失敗しました。通信状態やFirestoreのルールを確認してください。");
+    });
 }
 
 function isTaskCompleteToday(id) {
@@ -92,7 +156,9 @@ function render() {
   }).join("");
 }
 
+
 document.getElementById("tasks").addEventListener("click", event => {
+  if (!authReady) return;
   const button = event.target.closest("[data-task]");
   if (!button) return;
 
@@ -107,6 +173,7 @@ document.getElementById("tasks").addEventListener("click", event => {
 });
 
 document.getElementById("shop").addEventListener("click", event => {
+  if (!authReady) return;
   const button = event.target.closest("[data-buy]");
   if (!button) return;
 
@@ -123,9 +190,85 @@ document.getElementById("shop").addEventListener("click", event => {
 const modal = document.getElementById("modalBg");
 document.getElementById("accountBtn").addEventListener("click", () => modal.classList.add("open"));
 document.getElementById("closeModal").addEventListener("click", () => modal.classList.remove("open"));
-document.getElementById("understood").addEventListener("click", () => modal.classList.remove("open"));
 modal.addEventListener("click", event => {
   if (event.target === modal) modal.classList.remove("open");
 });
 
+document.getElementById("signInBtn").addEventListener("click", async () => {
+  const button = document.getElementById("signInBtn");
+  button.disabled = true;
+  updateAuthUI("Googleログイン画面を開いています…", "Googleアカウントを選択してください。");
+  try {
+    await signInWithPopup(auth, googleProvider);
+    // 実際のデータ読み込みは onAuthStateChanged で行います。
+  } catch (error) {
+    console.error("Googleログインエラー:", error);
+    authReady = true;
+    updateAuthUI("ログインできませんでした",
+      error.code === "auth/popup-blocked"
+        ? "ポップアップがブロックされたようです。ブラウザでポップアップを許可して、もう一度お試しください。"
+        : `エラー：${error.message || error.code || "不明なエラー"}`);
+  } finally {
+    button.disabled = false;
+  }
+});
+
+document.getElementById("signOutBtn").addEventListener("click", async () => {
+  try {
+    await signOut(auth);
+    showToast("ログアウトしました");
+  } catch (error) {
+    console.error("ログアウトエラー:", error);
+    updateAuthUI("ログアウトできませんでした", error.message || "もう一度お試しください。");
+  }
+});
+
+onAuthStateChanged(auth, async user => {
+  currentUser = user;
+  cloudReady = false;
+
+  if (!user) {
+    authReady = true;
+    updateAuthUI("ログインしていません", "この端末のデータはそのまま残っています。同期するにはGoogleでログインしてください。");
+    render();
+    return;
+  }
+
+  authReady = false;
+  updateAuthUI("クラウドデータを確認中…", "少し待ってね。");
+  try {
+    const userDoc = await getDoc(doc(db, "users", user.uid));
+    if (currentUser?.uid !== user.uid) return;
+
+    if (userDoc.exists() && userDoc.data().state) {
+      state = normalizeState(userDoc.data().state);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      updateAuthUI(`ログイン中：${user.email || "Googleアカウント"}`,
+        "クラウドのセーブデータを読み込みました。別の端末ではページを再読み込みすると最新データを読み込めます。");
+    } else {
+      state = readLocalState();
+      await setDoc(doc(db, "users", user.uid), {
+        state: JSON.parse(JSON.stringify(state)),
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+      updateAuthUI(`ログイン中：${user.email || "Googleアカウント"}`,
+        "この端末のセーブデータをクラウドに保存しました。");
+    }
+
+    if (currentUser?.uid !== user.uid) return;
+    cloudReady = true;
+    authReady = true;
+    render();
+  } catch (error) {
+    console.error("クラウド読み込みエラー:", error);
+    if (currentUser?.uid !== user.uid) return;
+    authReady = true;
+    cloudReady = false;
+    updateAuthUI(`ログイン中：${user.email || "Googleアカウント"}`,
+      "クラウドを読み込めませんでした。Firestoreのルールや通信状態を確認してください。");
+    render();
+  }
+});
+
+updateAuthUI("ログイン状態を確認中…", "Firebaseに接続しています。");
 render();
