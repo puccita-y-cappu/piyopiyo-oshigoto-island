@@ -23,12 +23,16 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
+
 const initialTasks = [
-  { id: "task-paperwork", icon: "🗂️", title: "無意味な事務処理を片付けた", category: "おかたづけミッション", reward: 100 },
-  { id: "task-smile", icon: "😊", title: "苦手なコトリに笑顔で対応した", category: "にこにこ対応ミッション", reward: 100 },
-  { id: "task-boundary", icon: "🪽", title: "他のコトリのおしごとを押し付けられそうになっても笑顔で断った", category: "やさしくおことわりミッション", reward: 100 },
+  { id: "task-paperwork", icon: "🗂️", title: "無意味なおしごとを片付けた", category: "おかたづけミッション", reward: 100 },
+  { id: "task-smile", icon: "😊", title: "仲良しじゃないコトリに笑顔で対応した", category: "にこにこ対応ミッション", reward: 100 },
+  { id: "task-boundary", icon: "🪽", title: "他のコトリのおしごとをお願いされそうになっても笑顔で断った", category: "やさしくおことわりミッション", reward: 100 },
   { id: "task-meeting", icon: "🐥", title: "コトリたちの作戦会議に参加した", category: "チームミッション", reward: 100 },
-  { id: "task-silent", icon: "💭", title: "余計なことを言い返さなかった", category: "ことばをのみこんだミッション", reward: 100 }
+  { id: "task-silent", icon: "💭", title: "余計なことを言い返さなかった", category: "ことばをのみこんだミッション", reward: 100 },
+  { id: "task-school", icon: "🎒", title: "コトリの学校にきちんと登校した", category: "まいにちミッション", reward: 100 },
+  { id: "task-posture", icon: "🌷", title: "なるべく姿勢をよくするように心がけた", category: "じぶんをいたわるミッション", reward: 100 },
+  { id: "task-bright", icon: "🌞", title: "なるべく表情を明るくするように心がけた", category: "にこにこミッション", reward: 100 }
 ];
 
 const shopItems = [
