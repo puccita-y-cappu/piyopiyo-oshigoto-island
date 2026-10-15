@@ -37,7 +37,7 @@ const initialTasks = [
 
 const shopItems = [
   { id: "flower", icon: "🌷", title: "お花の苗", cost: 250 },
-  { id: "chair", icon: "🪑", title: "木のいす", cost: 500 },
+  { id: "dinner", icon: "🍣", title: "すし", cost: 50000 },
   { id: "pond", icon: "🐸", title: "小さな池", cost: 900 }
 ];
 
