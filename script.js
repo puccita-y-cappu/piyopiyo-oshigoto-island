@@ -32,7 +32,8 @@ const initialTasks = [
   { id: "task-silent", icon: "💭", title: "余計なことを言い返さなかった", category: "ことばをのみこんだミッション", reward: 100 },
   { id: "task-school", icon: "🎒", title: "コトリの学校にきちんと登校した", category: "まいにちミッション", reward: 100 },
   { id: "task-posture", icon: "🌷", title: "なるべく姿勢をよくするように心がけた", category: "じぶんをいたわるミッション", reward: 100 },
-  { id: "task-bright", icon: "🌞", title: "なるべく表情を明るくするように心がけた", category: "にこにこミッション", reward: 100 }
+  { id: "task-bright", icon: "🌞", title: "なるべく表情を明るくするように心がけた", category: "にこにこミッション", reward: 100 },
+  { id: "task-programing", icon: "🖥️", title: "Progateでお勉強がんばった", category: "ぷろぐらみんぐミッション", reward: 200 }
 ];
 
 const shopItems = [
